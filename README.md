@@ -1,39 +1,23 @@
-# Material UI - Vite.js example
+# Task Management System
+
+This application creates a Kanban board for project management between team members. This comes with user authentication to assign roles and responsibilities with team members, as well as a notes history for online collaboration.
 
 ## How to use
 
-Download the example [or clone the repo](https://github.com/mui/material-ui):
+1. Download the repository.
 
-<!-- #default-branch-switch -->
-
-```bash
-curl https://codeload.github.com/mui/material-ui/tar.gz/master | tar -xz --strip=2 material-ui-master/examples/material-ui-vite
-cd material-ui-vite
-```
-
-Install it and run:
+2. To run the backend, please run these commands:
 
 ```bash
+cd backend
 npm install
-npm run dev
+node index.js
 ```
 
-or:
+3. To run the frontend, please run these commands:
 
-<!-- #default-branch-switch -->
-
-[![Edit on StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/mui/material-ui/tree/master/examples/material-ui-vite)
-
-[![Edit on CodeSandbox](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/p/sandbox/github/mui/material-ui/tree/master/examples/material-ui-vite)
-
-## The idea behind the example
-
-This example uses [Vite.js](https://github.com/vitejs/vite).
-It includes `@mui/material` and its peer dependencies, including [Emotion](https://emotion.sh/docs/introduction), the default style engine in Material UI v6.
-
-## What's next?
-
-<!-- #default-branch-switch -->
-
-You now have a working example project.
-You can head back to the documentation and continue by browsing the [templates](https://mui.com/material-ui/getting-started/templates/) section.
+```bash
+cd frontend
+npm install
+npm run
+```
