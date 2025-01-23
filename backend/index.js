@@ -22,6 +22,8 @@ const app = express();
 /** MIDDLE WARES **/
 app.use(cors());
 
+app.use(express.json()); // Built-in middleware to parse JSON bodies
+
 app.use((req, res, next) => {
   req.db = db; // passing DB service to all backend requests
   next();
@@ -32,6 +34,7 @@ app.get('/', (req, res) => {
   res.send('Task Management System - Backend API');
 });
 
+app.use('/auth', require('./routes/authRoutes'));
 app.use('/users', require('./routes/userRoutes'));
 app.use('/groups', require('./routes/userGroupRoutes'));
 
