@@ -3,6 +3,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const mysql = require('mysql2');
+const security = require('./utilities/security');
 
 /** ENVIRONMENT SETUP **/
 let frontendDomain = process.env.FRONTEND_DOMAIN;
@@ -29,14 +30,31 @@ app.use((req, res, next) => {
   next();
 })
 
+function checkAuth(req, res, next) {
+  const token = req.headers['authorization'];
+  console.log(req);
+
+  if (!token) {
+    return res.status(401).send('Access denied. No token provided.');
+  }
+
+  const result = security.verify_jwt(token);
+  if (!result) {
+    return res.status(403).send('Invalid token.');
+  }
+
+  req.user = result;
+  next();
+}
+
 /** APIS **/
 app.get('/', (req, res) => {
   res.send('Task Management System - Backend API');
 });
 
 app.use('/auth', require('./routes/authRoutes'));
-app.use('/users', require('./routes/userRoutes'));
-app.use('/groups', require('./routes/userGroupRoutes'));
+app.use('/users', checkAuth, require('./routes/userRoutes'));
+app.use('/groups', checkAuth, require('./routes/userGroupRoutes'));
 
 /** 404 HANDLER **/
 app.use((req, res) => {
