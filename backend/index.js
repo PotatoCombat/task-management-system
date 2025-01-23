@@ -33,6 +33,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/users', require('./routes/userRoutes'));
+app.use('/groups', require('./routes/userGroupRoutes'));
 
 /** 404 HANDLER **/
 app.use((req, res) => {
