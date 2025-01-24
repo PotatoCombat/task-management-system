@@ -1,0 +1,44 @@
+function getUserGroups(req, res) {
+  req.db.query('SELECT * FROM user_group', (err, results) => {
+    if (err) {
+      res.status(500).send('Error fetching user groups');
+    } else {
+      res.json(results);
+    }
+  });
+};
+
+function getUserGroupNames(req, res) {
+  req.db.query('SELECT DISTINCT user_group_groupName FROM user_group', (err, results) => {
+    if (err) {
+      res.status(500).send('Error fetching user group names');
+    } else {
+      res.json(results.map(row => row.user_group_groupName));
+    }
+  });
+};
+
+function getUserGroup(req, res) {
+  res.status(503).send('This endpoint is under construction');
+};
+
+function checkGroup(req, res) {
+  res.status(503).send('This endpoint is under construction');
+};
+
+function createUserGroup(req, res) {
+  res.status(503).send('This endpoint is under construction');
+};
+
+function updateUserGroup(req, res) {
+  res.status(503).send('This endpoint is under construction');
+};
+
+module.exports = {
+  getUserGroups,
+  getUserGroupNames,
+  getUserGroup,
+  checkGroup,
+  createUserGroup,
+  updateUserGroup,
+};
