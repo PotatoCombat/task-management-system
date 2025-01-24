@@ -3,11 +3,16 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const mysql = require('mysql2');
-const security = require('./utilities/security');
+
+const { checkToken, checkGroup } = require('./middleware/authMiddleware');
 
 /** ENVIRONMENT SETUP **/
-let frontendDomain = process.env.FRONTEND_DOMAIN;
-let port = process.env.PORT;
+const frontendDomain = process.env.FRONTEND_DOMAIN;
+const port = process.env.PORT;
+
+const group_admin = process.env.GROUP_ADMIN;
+const group_pl = process.env.GROUP_PL;
+const group_pm = process.env.GROUP_PM;
 
 /** DATABASE SETUP **/
 const db = mysql.createPool({
@@ -30,31 +35,14 @@ app.use((req, res, next) => {
   next();
 })
 
-function checkAuth(req, res, next) {
-  const token = req.headers['authorization'];
-  console.log(req);
-
-  if (!token) {
-    return res.status(401).send('Access denied. No token provided.');
-  }
-
-  const result = security.verify_jwt(token);
-  if (!result) {
-    return res.status(403).send('Invalid token.');
-  }
-
-  req.user = result;
-  next();
-}
-
 /** APIS **/
 app.get('/', (req, res) => {
   res.send('Task Management System - Backend API');
 });
 
 app.use('/auth', require('./routes/authRoutes'));
-app.use('/users', checkAuth, require('./routes/userRoutes'));
-app.use('/groups', checkAuth, require('./routes/userGroupRoutes'));
+app.use('/users', checkToken, checkGroup(group_admin), require('./routes/userRoutes'));
+app.use('/groups', checkToken, require('./routes/userGroupRoutes'));
 
 /** 404 HANDLER **/
 app.use((req, res) => {
