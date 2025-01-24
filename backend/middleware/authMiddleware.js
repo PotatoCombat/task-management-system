@@ -5,8 +5,7 @@ const msg_access_denied = 'Access denied.';
 
 function checkToken(req, res, next) {
   // Read token from Authorization header
-  const authHeader = req.headers['authorization'];
-  const token = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+  const token = req.cookies.token;
 
   // No token
   if (!token) {
@@ -14,12 +13,33 @@ function checkToken(req, res, next) {
   }
 
   // Verify token
-  const result = security.verify_jwt(token);
+  const result = security.decode_jwt(token);
 
   // Token is invalid
   if (!result) {
     return res.status(403).send(msg_access_denied);
   }
+
+  const { ip, browser_type, username } = result;
+
+  // Different IP
+  if (ip !== req.ip) {
+    return res.status(403).send(msg_access_denied);
+  }
+  if (browser_type !== req.headers['user-agent']) {
+    return res.status(403).send(msg_access_denied);
+  }
+  req.db.query('SELECT * FROM users WHERE user_username = ?', [username], async (err, results) => {
+    // Server error
+    if (err) {
+      return res.status(500).send(msg_server_error);
+    }
+
+    // Username does not exist
+    if (results.length === 0) {
+      return res.status(403).send(msg_access_denied);
+    }
+  });
 
   // Token is valid
   req.username = result.username;

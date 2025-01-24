@@ -34,10 +34,10 @@ function create_jwt(ip, browser_type, username) {
     jwtSecretKey,
     { expiresIn: jwtExpiry }
   );
-  return { token };
+  return token;
 }
 
-function verify_jwt(token) {
+function decode_jwt(token) {
   return jwt.verify(token, jwtSecretKey, (err, decoded) => {
     return err ? null : decoded;
   });
@@ -48,5 +48,5 @@ module.exports = {
   create_hash,
   verify_hash,
   create_jwt,
-  verify_jwt,
+  decode_jwt,
 }

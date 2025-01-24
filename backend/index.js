@@ -2,17 +2,18 @@ require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 const mysql = require('mysql2');
 
 const { checkToken, checkGroup } = require('./middleware/authMiddleware');
 
 /** ENVIRONMENT SETUP **/
-const frontendDomain = process.env.FRONTEND_DOMAIN;
+const frontendUrl = process.env.FRONTEND_URL;
 const port = process.env.PORT;
 
-const group_admin = process.env.GROUP_ADMIN;
-const group_pl = process.env.GROUP_PL;
-const group_pm = process.env.GROUP_PM;
+const groupAdmin = process.env.GROUP_ADMIN;
+const groupPl = process.env.GROUP_PL;
+const groupPm = process.env.GROUP_PM;
 
 /** DATABASE SETUP **/
 const db = mysql.createPool({
@@ -26,9 +27,13 @@ const db = mysql.createPool({
 const app = express();
 
 /** MIDDLE WARES **/
-app.use(cors());
+app.use(cors({
+  origin: frontendUrl, // Replace with your frontend URL
+  credentials: true, // Allow credentials (cookies)
+}));
 
 app.use(express.json()); // Built-in middleware to parse JSON bodies
+app.use(cookieParser()); // To parse cookies
 
 app.use((req, res, next) => {
   req.db = db; // passing DB service to all backend requests
@@ -36,12 +41,8 @@ app.use((req, res, next) => {
 })
 
 /** APIS **/
-app.get('/', (req, res) => {
-  res.send('Task Management System - Backend API');
-});
-
 app.use('/', require('./routes/authRoutes'));
-app.use('/users', checkToken, checkGroup(group_admin), require('./routes/userRoutes'));
+app.use('/users', checkToken, checkGroup(groupAdmin), require('./routes/userRoutes'));
 app.use('/groups', checkToken, require('./routes/userGroupRoutes'));
 
 /** 404 HANDLER **/
@@ -51,5 +52,5 @@ app.use((req, res) => {
 
 /** START SERVER **/
 app.listen(port, () => {
-  console.log(`Task Management System listening at ${frontendDomain}:${port}`);
+  console.log(`Task Management System listening at http://localhost:${port}`);
 });
