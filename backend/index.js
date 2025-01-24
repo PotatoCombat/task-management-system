@@ -40,7 +40,7 @@ app.get('/', (req, res) => {
   res.send('Task Management System - Backend API');
 });
 
-app.use('/auth', require('./routes/authRoutes'));
+app.use('/', require('./routes/authRoutes'));
 app.use('/users', checkToken, checkGroup(group_admin), require('./routes/userRoutes'));
 app.use('/groups', checkToken, require('./routes/userGroupRoutes'));
 
