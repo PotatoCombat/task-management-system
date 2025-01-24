@@ -5,8 +5,7 @@ const msg_access_denied = 'Access denied.';
 
 function checkToken(req, res, next) {
   // Read token from Authorization header
-  const authHeader = req.headers['authorization'];
-  const token = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+  const token = req.cookies.token;
 
   // No token
   if (!token) {
@@ -14,7 +13,7 @@ function checkToken(req, res, next) {
   }
 
   // Verify token
-  const result = security.verify_jwt(token);
+  const result = security.decode_jwt(token);
 
   // Token is invalid
   if (!result) {
