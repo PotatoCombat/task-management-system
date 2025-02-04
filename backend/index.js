@@ -13,6 +13,8 @@ app.use(cookieParser());    // Parse cookies
 /** API **/
 app.get('/', (req, res) => res.send('Welcome to Task Management System API'));
 
+app.use(require('./routes/authRoutes'));
+
 /** ERROR HANDLERS **/
 app.use((req, res) => {
   res.status(404).send('404 Not Found');
