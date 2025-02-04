@@ -18,6 +18,7 @@ app.use(require('./routes/authRoutes'));
 app.use(require('./middleware/getLoginUser'));
 
 app.use(require('./middleware/checkAdmin'));
+app.use(require('./routes/userRoutes'));
 
 /** ERROR HANDLERS **/
 app.use((req, res) => {
