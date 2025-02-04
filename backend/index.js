@@ -1,56 +1,38 @@
-require('dotenv').config();
-
 const express = require('express');
-const cors = require('cors');
 const cookieParser = require('cookie-parser');
-const mysql = require('mysql2');
+const cors = require('cors');
+const config = require('./config');
 
-const { checkToken, checkGroup } = require('./middleware/authMiddleware');
-
-/** ENVIRONMENT SETUP **/
-const frontendUrl = process.env.FRONTEND_URL;
-const port = process.env.PORT;
-
-const groupAdmin = process.env.GROUP_ADMIN;
-const groupPl = process.env.GROUP_PL;
-const groupPm = process.env.GROUP_PM;
-
-/** DATABASE SETUP **/
-const db = mysql.createPool({
-  database: process.env.DB_NAME,
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-});
-
-/** SERVER SETUP **/
+/** SETUP SERVER **/
 const app = express();
 
-/** MIDDLE WARES **/
-app.use(cors({
-  origin: frontendUrl, // Replace with your frontend URL
-  credentials: true, // Allow credentials (cookies)
-}));
+app.use(cors(config.cors)); // Accept requests from frontend
+app.use(express.json());    // Parse JSON bodies
+app.use(cookieParser());    // Parse cookies
 
-app.use(express.json()); // Built-in middleware to parse JSON bodies
-app.use(cookieParser()); // To parse cookies
+/** API **/
+app.get('/', (req, res) => res.send('Welcome to Task Management System API'));
 
-app.use((req, res, next) => {
-  req.db = db; // passing DB service to all backend requests
-  next();
-})
+app.use(require('./routes/authRoutes'));
 
-/** APIS **/
-app.use('/', require('./routes/authRoutes'));
-app.use('/users', checkToken, checkGroup(groupAdmin), require('./routes/userRoutes'));
-app.use('/groups', checkToken, require('./routes/userGroupRoutes'));
+app.use(require('./middleware/getLoginUser'));
+app.use(require('./routes/profileRoutes'));
 
-/** 404 HANDLER **/
+app.use(require('./middleware/checkAdmin'));
+app.use(require('./routes/userRoutes'));
+app.use(require('./routes/groupRoutes'));
+
+/** ERROR HANDLERS **/
 app.use((req, res) => {
   res.status(404).send('404 Not Found');
 });
 
+app.use((err, req, res, next) => {
+  console.log(err);
+  res.status(500).send('Server error, please try again');
+});
+
 /** START SERVER **/
-app.listen(port, () => {
-  console.log(`Task Management System listening at http://localhost:${port}`);
+app.listen(config.port, () => {
+  console.log(`Task Management System listening at http://localhost:${config.port}`);
 });

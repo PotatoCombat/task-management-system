@@ -1,12 +1,13 @@
 const bcryptjs = require('bcryptjs');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
+const config = require('../config');
 
-function create_secret(length) {
+function createSecret(length) {
   return crypto.randomBytes(length).toString('base64');
 }
 
-async function create_hash(password, saltRounds = 10) {
+async function createHash(password, saltRounds = 10) {
   try {
     const salt = await bcryptjs.genSalt(saltRounds);
     const hash = await bcryptjs.hash(password, salt);
@@ -17,36 +18,35 @@ async function create_hash(password, saltRounds = 10) {
   }
 }
 
-async function verify_hash(password, hash) {
+async function verifyHash(password, hash) {
   return bcryptjs.compare(password, hash);
 }
 
-const jwtSecretKey = process.env.JWT_SECRET_KEY;
-const jwtExpiry = process.env.JWT_EXPIRY;
-
-function create_jwt(ip, browser_type, username) {
-  const token = jwt.sign(
-    {
-      ip,
-      browser_type,
-      username
-    },
-    jwtSecretKey,
-    { expiresIn: jwtExpiry }
+function createJwt(ip, browserType, username) {
+  return jwt.sign(
+    { ip, browserType, username },
+    config.jwt.secret,
+    config.jwt.options
   );
-  return token;
 }
 
-function decode_jwt(token) {
-  return jwt.verify(token, jwtSecretKey, (err, decoded) => {
-    return err ? null : decoded;
-  });
+function decodeJwt(token) {
+  try {
+    return jwt.verify(token, config.jwt.secret);
+  } catch (error) {
+    return null;
+  }
+}
+
+function isValidPassword(password) {
+  const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+  return regex.test(password);
 }
 
 module.exports = {
-  create_secret,
-  create_hash,
-  verify_hash,
-  create_jwt,
-  decode_jwt,
+  createSecret,
+  createHash,
+  verifyHash,
+  createJwt,
+  decodeJwt,
 }
