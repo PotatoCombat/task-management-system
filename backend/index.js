@@ -16,6 +16,7 @@ app.get('/', (req, res) => res.send('Welcome to Task Management System API'));
 app.use(require('./routes/authRoutes'));
 
 app.use(require('./middleware/getLoginUser'));
+app.use(require('./routes/profileRoutes'));
 
 app.use(require('./middleware/checkAdmin'));
 app.use(require('./routes/userRoutes'));
