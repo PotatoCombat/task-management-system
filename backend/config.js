@@ -29,6 +29,9 @@ module.exports = {
       maxAge: ENV.JWT_EXPIRY,
     },
   },
+  accounts: {
+    admin: ENV.ACCOUNT_ADMIN,
+  },
   groups: {
     admin: ENV.GROUP_ADMIN,
     pl: ENV.GROUP_PL,
