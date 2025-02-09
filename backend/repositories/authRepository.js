@@ -1,28 +1,42 @@
 const db = require('../utilities/database');
 
-async function getHashedPassword({ username }) {
-  const [rows] = await db.execute(
-    'SELECT user_password FROM users WHERE user_username = ?',
+const getCredentials = async ({ username }) => {
+  const [rows] = await db.execute(`
+      SELECT user_password as hashedPassword,
+             user_enabled as enabled
+      FROM users
+      WHERE user_username = ?
+    `,
     [username]
   );
+  // User not found
   if (rows.length === 0) {
     return null;
   }
-  return { hashedPassword: rows[0].user_password };
+  return rows[0];
 }
 
-async function checkGroup(username, group) {
+const isEnabled = async ({ username }) => {
+  const [rows] = await db.execute(
+    'SELECT user_enabled enabled FROM users WHERE user_username = ?',
+    [username]
+  );
+  return rows.length > 0 && rows[0].enabled === 1;
+}
+
+const checkGroup = async (username, group) => {
   if (!username || !group) {
-    return { result: false };
+    return false;
   }
   const [rows] = await db.execute(
     'SELECT 1 FROM user_group WHERE user_group_username = ? AND user_group_groupName = ?',
     [username, group]
   );
-  return { result: rows.length > 0 };
+  return rows.length > 0;
 }
 
 module.exports = {
-  getHashedPassword,
+  getCredentials,
+  isEnabled,
   checkGroup,
 };
