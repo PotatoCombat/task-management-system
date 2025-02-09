@@ -1,18 +1,47 @@
-import React from 'react';
-import { Route, createBrowserRouter, createRoutesFromElements, RouterProvider, Routes } from 'react-router-dom';
-import Home from './pages/Home';
-import About from './pages/About';
-import Users from './pages/Users';
+import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 
+import { AppHeader, GroupRoutes, LoginRoutes } from '@/components';
+import config from '@/config';
+import { ProfileProvider } from '@/contexts/ProfileContext';
+import {
+  ErrorPage,
+  LoginPage,
+  LogoutPage,
+  ProfilePage,
+  TasksPage,
+  UsersPage
+} from '@/pages';
 
 function App() {
-
   return (
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/users" element={<Users />} />
-      </Routes>
+    <ProfileProvider>
+      <Router>
+        <AppHeader />
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<LoginPage />} />
+          <Route path="/logout" element={<LogoutPage />} />
+
+          {/* Private Routes */}
+          <Route element={<LoginRoutes />}>
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/tasks" element={<TasksPage />} />
+
+            {/* Admin Routes */}
+            <Route element={<GroupRoutes group={config.groups.admin} />}>
+              <Route path="/users" element={<UsersPage />} />
+            </Route>
+
+            {/* 404 when logged in */}
+            <Route path="*" element={<ErrorPage />} />
+          </Route>
+
+          {/* Redirect to login when logged out */}
+          <Route path="*" element={<Navigate to={'/'} />} />
+
+        </Routes>
+      </Router>
+    </ProfileProvider>
   );
 }
 
