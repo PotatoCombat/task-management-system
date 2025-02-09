@@ -8,14 +8,9 @@ function createSecret(length) {
 }
 
 async function createHash(password, saltRounds = 10) {
-  try {
-    const salt = await bcryptjs.genSalt(saltRounds);
-    const hash = await bcryptjs.hash(password, salt);
-    return hash;
-  } catch (err) {
-    console.error(err);
-    throw err;
-  }
+  const salt = await bcryptjs.genSalt(saltRounds);
+  const hash = await bcryptjs.hash(password, salt);
+  return hash;
 }
 
 async function verifyHash(password, hash) {
@@ -36,11 +31,6 @@ function decodeJwt(token) {
   } catch (error) {
     return null;
   }
-}
-
-function isValidPassword(password) {
-  const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-  return regex.test(password);
 }
 
 module.exports = {
