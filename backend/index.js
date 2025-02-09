@@ -13,6 +13,7 @@ app.use(cookieParser());    // Parse cookies
 /** API **/
 app.get('/', (req, res) => res.send('Welcome to Task Management System API'));
 
+app.use(require('./middleware/formatRequest'));
 app.use(require('./routes/authRoutes'));
 
 app.use(require('./middleware/getLoginUser'));
@@ -28,8 +29,12 @@ app.use((req, res) => {
 });
 
 app.use((err, req, res, next) => {
-  console.log(err);
-  res.status(500).send('Server error, please try again');
+  console.error(err);
+  res.status(err.status || 500)
+    .json({
+      code: err.code || 'SERVER_ERROR',
+      message: err.message || 'Server error, please try again'
+    });
 });
 
 /** START SERVER **/

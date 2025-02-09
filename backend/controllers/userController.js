@@ -1,64 +1,67 @@
+const config = require('../config');
+
 const repository = require('../repositories/userRepository');
 
-const security = require('../utilities/security');
+const { BadRequestError, ConflictError, NotFoundError } = require('../utilities/errors');
+const http = require('../utilities/http');
+const validation = require('../utilities/validation');
 
-async function getAllUsers(req, res) {
-  try {
-    const users = await repository.getAllUsers();
-    res.json(users);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Error fetching users');
+const getAllUsers = http.asyncHandler(async (req, res) => {
+  const users = await repository.getAllUsers();
+  res.json(users);
+});
+
+const getUser = http.asyncHandler(async (req, res) => {
+  const username = req.params.username?.toLowerCase();
+
+  const user = await repository.getUser({ username });
+  if (!user) {
+    throw new NotFoundError('User not found');
   }
-}
+  res.json(user);
+});
 
-async function getUser(req, res) {
-  try {
-    const user = await repository.getUser(req.body);
-    if (user) {
-      res.json(user);
-    } else {
-      res.status(404).send('User not found');
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Error fetching user');
-  }
-}
-
-async function createUser(req, res) {
+const createUser = http.asyncHandler(async (req, res) => {
   const { username, password, email, enabled, groups } = req.body;
 
-  // TODO: Validate password
-  const hashedPassword = await security.createHash(password);
+  // Validate params
+  validation.validateUsername(username);
+  validation.validatePassword(password);
 
-  try {
-    const newUser = await repository.createUser({ username, hashedPassword, email, enabled, groups });
-    res.status(201).json(newUser);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Error creating user');
+  // Create user
+  const newUser = await repository.createUser(req.body);
+  if (!newUser) {
+    throw new ConflictError('Username already exists');
   }
-}
+  res.status(201).json(newUser);
+});
 
-async function updateUser(req, res) {
+const updateUser = http.asyncHandler(async (req, res) => {
   const { username, password, email, enabled, groups } = req.body;
 
-  // TODO: Validate password
-  const hashedPassword = await security.createHash(password);
-
-  try {
-    const updatedUser = await repository.updateUser({ username, hashedPassword, email, enabled, groups });
-    if (updatedUser) {
-      res.json(updatedUser);
-    } else {
-      res.status(404).send('User not found');
+  // Protect hardcoded admin
+  if (username === config.accounts.admin) {
+    if (!enabled || !groups.includes(config.groups.admin)) {
+      throw new BadRequestError('Admin cannot be disabled or removed from admin group');
     }
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Error updating user');
   }
-}
+
+  // Validate params
+  validation.validateUsername(username);
+  if (password?.length > 0) {
+    validation.validatePassword(password);
+  }
+
+  // Find user
+  const user = await repository.getUser({ username });
+  if (!user) {
+    throw new NotFoundError('User not found');
+  }
+
+  // Update user
+  await repository.updateUser(req.body);
+  res.sendStatus(204);
+});
 
 module.exports = {
   getAllUsers,

@@ -1,55 +1,50 @@
+const config = require('../config');
+
 const repository = require('../repositories/authRepository');
 
-const config = require('../config');
+const { AuthenticationError } = require('../utilities/errors');
+const http = require('../utilities/http');
 const security = require('../utilities/security');
 
-async function login(req, res) {
+const login = http.asyncHandler(async (req, res) => {
   const { username, password } = req.body;
 
-  // Missing params
+  // Validate params
   if (!username || !password) {
-    return res.status(400).send('Login requires username and password');
+    throw new AuthenticationError('Login requires username and password');
   }
 
-  try {
-    const { hashedPassword } = await repository.getHashedPassword({ username });
-
-    // Username does not exist
-    if (!hashedPassword) {
-      return res.status(401).send('Login failed');
-    }
-
-    // Password is incorrect
-    const match = await security.verifyHash(password, hashedPassword);
-    if (!match) {
-      return res.status(401).send('Login failed');
-    }
-
-    // Sign JWT token
-    const token = security.createJwt(req.ip, req.headers['user-agent'], username);
-
-    // Set cookie in HTTP response
-    res.cookie(config.cookie.name, token, config.cookie.options);
-    res.send('Login successful');
-
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Error logging in');
+  // Find credentials
+  const credentials = await repository.getCredentials({ username });
+  if (!credentials || !credentials.enabled) {
+    throw new AuthenticationError('Login failed');
   }
-}
 
-function logout(req, res) {
+  // Password is incorrect
+  const match = await security.verifyHash(password, credentials.hashedPassword);
+  if (!match) {
+    throw new AuthenticationError('Login failed');
+  }
+
+  // Sign JWT token
+  const token = security.createJwt(req.ip, req.headers['user-agent'], username);
+
+  // Set cookie in HTTP response
+  res.cookie(config.cookie.name, token, config.cookie.options);
+  res.json({ message: 'Login successful' });
+});
+
+const logout = http.asyncHandler(async (req, res) => {
+  // Read cookie
   const token = req.cookies[config.cookie.name];
-
-  // User already logged out
   if (!token) {
-    return res.status(400).send('Logout failed, already logged out');
+    throw new AuthenticationError('Already logged out');
   }
 
   // Clear cookie from user's browser
   res.clearCookie(config.cookie.name);
-  res.send('Logout successful');
-}
+  res.json({ message: 'Logout successful' });
+});
 
 module.exports = {
   login,

@@ -1,18 +1,16 @@
-const config = require('../config')
+const config = require('../config');
+
 const authRepository = require('../repositories/authRepository');
 
-async function checkAdmin(req, res, next) {
-  try {
-    const { result } = await authRepository.checkGroup(req.username, config.groups.admin);
-    if (result) {
-      next();
-    } else {
-      res.status(404).send('Access denied');
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Error checking admin');
+const { AuthenticationError } = require('../utilities/errors');
+const http = require('../utilities/http');
+
+const checkAdmin = http.asyncHandler(async (req, res, next) => {
+  const result = await authRepository.checkGroup(req.username, config.groups.admin);
+  if (!result) {
+    throw new AuthenticationError('Access denied');
   }
-}
+  next();
+});
 
 module.exports = checkAdmin;

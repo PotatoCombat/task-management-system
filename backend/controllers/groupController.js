@@ -1,24 +1,27 @@
 const repository = require('../repositories/groupRepository');
 
-async function getAllGroups(req, res) {
-  try {
-    const groups = await repository.getAllGroups();
-    res.json(groups);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Error fetching groups');
-  }
-}
+const { ConflictError } = require('../utilities/errors');
+const http = require('../utilities/http');
+const validation = require('../utilities/validation');
 
-async function createGroup(req, res) {
-  try {
-    const newGroup = await repository.createGroup(req.body);
-    res.status(201).json(newGroup);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Error creating group');
+const getAllGroups = http.asyncHandler(async (req, res) => {
+  const groups = await repository.getAllGroups();
+  res.json(groups);
+})
+
+const createGroup = http.asyncHandler(async (req, res) => {
+  const { group } = req.body;
+
+  // Validate params
+  validation.validateGroupName(group);
+
+  // Create group
+  const newGroup = await repository.createGroup({ group });
+  if (!newGroup) {
+    throw new ConflictError('Group name already exists');
   }
-}
+  res.status(201).json(newGroup);
+});
 
 module.exports = {
   getAllGroups,

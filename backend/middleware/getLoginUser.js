@@ -1,37 +1,42 @@
-const config = require('../config')
+const config = require('../config');
+
+const repository = require('../repositories/authRepository');
+
+const { AuthenticationError } = require('../utilities/errors');
+const http = require('../utilities/http');
 const security = require('../utilities/security');
 
-function getLoginUser(req, res, next) {
-  // Read token from cookie
+const getLoginUser = http.asyncHandler(async function(req, res, next) {
+  // Read cookie
   const token = req.cookies[config.cookie.name];
-
-  // No token
   if (!token) {
-    return res.status(404).send('Access denied');
+    throw new AuthenticationError('Access denied');
   }
 
   // Verify token
   const result = security.decodeJwt(token);
-
-  // Token is invalid
   if (!result) {
-    return res.status(404).send('Access denied');
+    throw new AuthenticationError('Access denied');
   }
 
   const { ip, browserType, username } = result;
 
-  // Different IP
+  // Token has different IP
   if (ip !== req.ip) {
-    return res.status(404).send('Access denied');
+    throw new AuthenticationError('Access denied');
   }
-  // Different browser
+  // Token has different browser
   if (browserType !== req.headers['user-agent']) {
-    return res.status(404).send('Access denied');
+    throw new AuthenticationError('Access denied');
+  }
+  // Check account status
+  const enabled = await repository.isEnabled({ username });
+  if (!enabled) {
+    throw new AuthenticationError('Access denied');
   }
 
-  // Token is valid
   req.username = username;
   next();
-}
+});
 
 module.exports = getLoginUser;
