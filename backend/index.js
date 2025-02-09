@@ -29,8 +29,12 @@ app.use((req, res) => {
 });
 
 app.use((err, req, res, next) => {
-  console.log(err);
-  res.status(500).send('Server error, please try again');
+  console.error(err);
+  res.status(err.status || 500)
+    .json({
+      code: err.code || 'SERVER_ERROR',
+      message: err.message || 'Server error, please try again'
+    });
 });
 
 /** START SERVER **/
