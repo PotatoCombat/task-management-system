@@ -6,9 +6,11 @@ import config from '@/config';
 import { AppAlert, AppHeader, GlobalRoutes, GroupRoutes, LoginRoutes } from '@/components';
 import {
   ApplicationsPage,
+  KanbanPage,
   LoginPage,
   LogoutPage,
   ProfilePage,
+  TaskPage,
   UsersPage
 } from '@/pages';
 
@@ -29,6 +31,9 @@ function App() {
             {/* Private Routes */}
             <Route element={<LoginRoutes />}>
               <Route path="/home" element={<ApplicationsPage />} />
+              <Route path="/apps/:application" element={<KanbanPage />} />
+              <Route path="/apps/:application/create-task" element={<TaskPage />} />
+              <Route path="/apps/:application/task/:taskId" element={<TaskPage />} />
               <Route path="/profile" element={<ProfilePage />} />
 
               {/* Admin Routes */}
