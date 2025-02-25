@@ -1,28 +1,28 @@
 import { useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 
-import { Alert, Button, Container, FormGroup, TextField } from '@mui/material';
+import { Box, Button, FormGroup, TextField } from '@mui/material';
 
 import api from '@/api';
-import { useProfile } from '@/contexts/ProfileContext';
-import useAlert from '@/hooks/useAlert';
+import { useAlert } from '@/contexts/AlertContext';
+import { useAuth } from '@/contexts/AuthContext';
+
 import styles from './styles';
 
-const HOME_PAGE = '/tasks';
 
 const LoginPage = () => {
-  const navigate = useNavigate();
+  const { showError } = useAlert();
+  const { session } = useAuth();
 
-  const { alert, showError } = useAlert();
-  const { loading, profile, loadProfile } = useProfile();
+  const [loggedIn, setLoggedIn] = useState(session !== null);
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleLogin = async () => {
+  const login = async () => {
     try {
       await api.login({ username, password });
-      await loadProfile();
+      setLoggedIn(true);
     } catch (error) {
       showError(error);
     }
@@ -30,22 +30,17 @@ const LoginPage = () => {
 
   const handleKeyDown = (event) => {
     if (event.key === 'Enter') {
-      handleLogin();
+      login();
     }
   };
 
-  if (loading) {
-    return null;
-  }
-
-  if (profile) {
-    return <Navigate to={HOME_PAGE} />
+  if (loggedIn) {
+    return <Navigate to={'/home'} />
   }
 
   return (
-    <Container maxWidth={false} sx={styles.formContainer}>
+    <Box sx={styles.formContainer}>
       <FormGroup sx={styles.formGroup}>
-        <Alert severity={alert.severity} sx={{ visibility: alert.visible }}>{alert.message}</Alert>
         <TextField
           label='Username'
           variant='outlined'
@@ -67,13 +62,13 @@ const LoginPage = () => {
           variant='contained'
           color='primary'
           fullWidth
-          onClick={handleLogin}
+          onClick={() => login()}
           sx={styles.formButton}
         >
           Login
         </Button>
       </FormGroup>
-    </Container>
+    </Box>
   );
 };
 

@@ -1,5 +1,6 @@
-import { Switch, TableCell } from '@mui/material';
 import { forwardRef, useImperativeHandle, useState } from 'react';
+
+import { Switch, TableCell } from '@mui/material';
 
 const SwitchCell = forwardRef(({
   defaultChecked,

@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import {
-  Alert,
   Box,
   Button,
-  Container,
   Table,
   TableBody,
   TableContainer,
@@ -14,28 +13,26 @@ import {
   Typography
 } from '@mui/material';
 
-import api from '@/api';
-import {
-  ButtonCell,
-  HeadingCell,
-  SelectCell,
-  SwitchCell,
-  TextCell
-} from '@/components';
 import config from '@/config';
-import useAlert from '@/hooks/useAlert';
+import api from '@/api';
+import { ButtonCell, HeadingCell, SelectCell, SwitchCell, TextCell } from '@/components';
+import { useAlert } from '@/contexts/AlertContext';
+
 import styles from './styles';
+
 
 const createRowId = '*';
 
 const UsersPage = () => {
+  const navigate = useNavigate();
+
   const [users, setUsers] = useState(null);
   const [groupNames, setGroupNames] = useState([]);
 
-  const { alert, showSuccess, showError } = useAlert();
   const [group, setGroup] = useState('');
-
   const refs = useRef(new Map());
+
+  const { showSuccess, showError } = useAlert();
 
   useEffect(() => {
     fetchUsers();
@@ -47,6 +44,7 @@ const UsersPage = () => {
       const response = await api.getAllUsers();
       setUsers(response.data);
     } catch (error) {
+      navigate('/logout');
       showError(error);
     }
   }
@@ -189,7 +187,7 @@ const UsersPage = () => {
           inputRef={(el) => (refs.current.set(rowIds.password, el))}
           defaultValue=''
           type='password'
-          placeholder='Change password'
+          placeholder='Reset password'
         />
         <TextCell
           inputRef={(el) => (refs.current.set(rowIds.email, el))}
@@ -217,10 +215,10 @@ const UsersPage = () => {
   };
 
   return (
-    <Container maxWidth={false} sx={styles.container}>
+    <Box sx={{ ...styles.container, overflow: 'auto' }}>
       <Typography variant='h4' align='left' sx={styles.title}>Users</Typography>
       <Box sx={styles.tableOptions}>
-        <Alert severity={alert.severity} sx={{ flex: 1, visibility: alert.visible }}>{alert.message}</Alert>
+
         {/* Group Creation */}
         <TextField
           label='Group name'
@@ -244,7 +242,7 @@ const UsersPage = () => {
           </TableBody>
         </Table>
       </TableContainer>
-    </Container>
+    </Box>
   );
 };
 

@@ -3,6 +3,7 @@ const ENV = import.meta.env;
 export default {
   main: ENV.VITE_MAIN,
   port: ENV.VITE_PORT,
+  debug: ENV.DEV,
   backend: {
     baseURL: ENV.VITE_BACKEND_URL,
     headers: {

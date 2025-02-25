@@ -1,12 +1,12 @@
-import { Outlet } from 'react-router-dom';
+import { Navigate, Outlet } from 'react-router-dom';
 
-import { useProfile } from '@/contexts/ProfileContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 const GroupRoutes = ({ group }) => {
-  const { profile } = useProfile();
+  const { session } = useAuth();
 
-  if (!group || !profile.groups.includes(group)) {
-    return <ErrorPage />;
+  if (!group || !session.groups.includes(group)) {
+    return <Navigate to='/logout' />;
   }
   return <Outlet />;
 }

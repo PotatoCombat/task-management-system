@@ -3,9 +3,12 @@ import { createRoot } from 'react-dom/client';
 
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
+import { BrowserRouter as Router } from 'react-router-dom';
 
 import App from './App';
 import theme from './theme';
+import { AlertProvider } from './contexts/AlertContext';
+import { AuthProvider } from './contexts/AuthContext';
 
 const rootElement = document.getElementById('root');
 const root = createRoot(rootElement);
@@ -14,7 +17,13 @@ root.render(
   <React.StrictMode>
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <App />
+      <Router>
+        <AlertProvider>
+          <AuthProvider>
+            <App />
+          </AuthProvider>
+        </AlertProvider>
+      </Router>
     </ThemeProvider>
   </React.StrictMode>
 );

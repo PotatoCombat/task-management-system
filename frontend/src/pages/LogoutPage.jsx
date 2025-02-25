@@ -1,17 +1,27 @@
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { Navigate } from 'react-router-dom';
+
+import { Container, Typography } from '@mui/material';
 
 import api from '@/api';
-import { useProfile } from '@/contexts/ProfileContext';
+import { useAlert } from '@/contexts/AlertContext';
+
+import styles from './styles';
+
 
 const LOGIN_PAGE = '/';
 
 const LogoutPage = () => {
-  const navigate = useNavigate();
+  const { showError } = useAlert();
 
-  const { clearProfile } = useProfile();
+  const [loggedOut, setLoggedOut] = useState(false);
+  const mounted = useRef(false);
 
   useEffect(() => {
+    if (mounted.current) {
+      return;
+    }
+    mounted.current = true;
     logout();
   }, [])
 
@@ -19,13 +29,21 @@ const LogoutPage = () => {
     try {
       await api.logout()
     } catch (error) {
+      showError(error, { persist: true });
     } finally {
-      clearProfile();
-      navigate(LOGIN_PAGE);
+      setLoggedOut(true);
     }
   };
 
-  return null;
+  if (loggedOut) {
+    return <Navigate to={LOGIN_PAGE} />
+  }
+
+  return (
+    <Container maxWidth={false}>
+      <Typography variant='h4' align='left' sx={styles.title}>Logging out...</Typography>
+    </Container>
+  );
 };
 
 export default LogoutPage;
