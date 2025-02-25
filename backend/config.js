@@ -20,6 +20,9 @@ module.exports = {
       expiresIn: ENV.JWT_EXPIRY,
     },
   },
+  bcryptjs: {
+    saltRounds: 10,
+  },
   cookie: {
     name: ENV.JWT_COOKIE,
     options: {
