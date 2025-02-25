@@ -13,6 +13,8 @@ module.exports = {
     host: ENV.DB_HOST,
     user: ENV.DB_USER,
     password: ENV.DB_PASSWORD,
+    timezone: 'Z',
+    dateStrings: true,
   },
   jwt: {
     secret: ENV.JWT_SECRET,
@@ -31,6 +33,13 @@ module.exports = {
       sameSite: 'Strict',
       maxAge: ENV.JWT_EXPIRY,
     },
+  },
+  email: {
+    service: ENV.EMAIL_SERVICE,
+    auth: {
+      user: ENV.EMAIL_ACCOUNT,
+      pass: ENV.EMAIL_PASSWORD
+    }
   },
   accounts: {
     admin: ENV.ACCOUNT_ADMIN,

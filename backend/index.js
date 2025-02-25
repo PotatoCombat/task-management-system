@@ -13,6 +13,7 @@ app.use(cookieParser());    // Parse cookies
 /** API **/
 app.get('/', (req, res) => res.send('Welcome to Task Management System API'));
 app.use('/user', require('./routes/userRoutes'));
+app.use('/task', require('./routes/taskRoutes'));
 
 /** ERROR HANDLERS **/
 app.use((req, res) => {
