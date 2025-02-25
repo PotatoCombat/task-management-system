@@ -10,15 +10,15 @@ const SelectCell = forwardRef(({
   onChange,
   ...props
 }, ref) => {
-  const [value, setValue] = useState(defaultValue ?? (multiple ? [] : options[0]));
+  const [value, setValue] = useState(defaultValue ?? (multiple ? [] : '*'));
 
   useImperativeHandle(ref, () => ({
-    getValue: () => value,
+    getValue: () => value === '*' ? null : value,
     setValue: setValue,
   }));
 
   const renderText = (selected) => {
-    return multiple ? `Selected ${selected.length}` : selected;
+    return multiple ? `Selected ${selected.length}` : selected === '*' ? '- - - - -' : selected;
   }
 
   const handleChange = (event) => {
@@ -40,6 +40,7 @@ const SelectCell = forwardRef(({
         {...props}
         value={value}
       >
+        {!multiple && <MenuItem key={'*'} value={'*'}>- - - - -</MenuItem>}
         {options?.map((option) => (
           <MenuItem key={option} value={option} disabled={disabledOptions?.includes(option)}>{option}</MenuItem>
         ))}

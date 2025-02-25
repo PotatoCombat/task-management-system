@@ -1,24 +1,12 @@
-import { useEffect } from 'react';
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { Navigate, Outlet } from 'react-router-dom';
 
-import { useProfile } from '@/contexts/ProfileContext';
-
-const LOGIN_PAGE = '/';
+import { useAuth } from '@/contexts/AuthContext';
 
 const LoginRoutes = () => {
-  const location = useLocation();
+  const { session } = useAuth();
 
-  const { profile, loading, loadProfile } = useProfile();
-
-  useEffect(() => {
-    loadProfile(); // Fetch profile on every route change
-  }, [location.key]);
-
-  if (loading) {
-    return null;
-  }
-  if (!profile) {
-    return <Navigate to={LOGIN_PAGE} />;
+  if (!session) {
+    return <Navigate to='/' />;
   }
   return <Outlet />;
 }

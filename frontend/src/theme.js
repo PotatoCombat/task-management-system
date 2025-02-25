@@ -1,5 +1,5 @@
-import { red } from '@mui/material/colors';
 import { createTheme } from '@mui/material/styles';
+
 
 const theme = createTheme({
   cssVariables: true,
@@ -16,7 +16,7 @@ const theme = createTheme({
       main: '#19857b',
     },
     error: {
-      main: red.A400,
+      main: '#ff1744',
     },
     text: {
       primary: '#000', // Text color for normal text
@@ -24,11 +24,24 @@ const theme = createTheme({
     },
   },
   components: {
+    MuiInput: {
+      styleOverrides: {
+        root: {
+          '& input[type=number]': {
+            MozAppearance: 'textfield', // Firefox
+            WebkitAppearance: 'none', // Chrome, Safari, Edge
+          },
+          '& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button': {
+            WebkitAppearance: 'none',
+            margin: 0,
+          },
+        },
+      },
+    },
     MuiTableCell: {
       styleOverrides: {
         root: {
           '&.table-cell': {
-            // verticalAlign: 'top',
             padding: 0,
             border: `1px solid black`,
             '& .MuiInputBase-root': {

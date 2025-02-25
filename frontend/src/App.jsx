@@ -1,47 +1,48 @@
-import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 
-import { AppHeader, GroupRoutes, LoginRoutes } from '@/components';
+import { Box } from '@mui/material';
+
 import config from '@/config';
-import { ProfileProvider } from '@/contexts/ProfileContext';
+import { AppAlert, AppHeader, GlobalRoutes, GroupRoutes, LoginRoutes } from '@/components';
 import {
-  ErrorPage,
+  ApplicationsPage,
   LoginPage,
   LogoutPage,
   ProfilePage,
-  TasksPage,
   UsersPage
 } from '@/pages';
 
 function App() {
   return (
-    <ProfileProvider>
-      <Router>
+    <>
+      <Box className='header' sx={{ position: 'fixed', width: '100%', zIndex: 10 }}>
         <AppHeader />
+        <AppAlert />
+      </Box>
+      <Box className='page' sx={{ pt: '96px', pl: 4, pr: 4, pb: 4, width: '100%', height: '100%' }}>
         <Routes>
           {/* Public Routes */}
-          <Route path="/" element={<LoginPage />} />
-          <Route path="/logout" element={<LogoutPage />} />
+          <Route element={<GlobalRoutes />}>
+            <Route path="/" element={<LoginPage />} />
+            <Route path="/logout" element={<LogoutPage />} />
 
-          {/* Private Routes */}
-          <Route element={<LoginRoutes />}>
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/tasks" element={<TasksPage />} />
+            {/* Private Routes */}
+            <Route element={<LoginRoutes />}>
+              <Route path="/home" element={<ApplicationsPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
 
-            {/* Admin Routes */}
-            <Route element={<GroupRoutes group={config.groups.admin} />}>
-              <Route path="/users" element={<UsersPage />} />
+              {/* Admin Routes */}
+              <Route element={<GroupRoutes group={config.groups.admin}/>}>
+                <Route path="/users" element={<UsersPage />} />
+              </Route>
             </Route>
 
-            {/* 404 when logged in */}
-            <Route path="*" element={<ErrorPage />} />
+            {/* Redirect to login when logged out */}
+            <Route path="*" element={<Navigate to={'/'} />} />
           </Route>
-
-          {/* Redirect to login when logged out */}
-          <Route path="*" element={<Navigate to={'/'} />} />
-
         </Routes>
-      </Router>
-    </ProfileProvider>
+      </Box>
+    </>
   );
 }
 

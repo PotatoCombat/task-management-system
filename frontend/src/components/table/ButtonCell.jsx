@@ -6,7 +6,7 @@ const ButtonCell = ({
 }) => {
   return (
     <TableCell className='table-cell'>
-      <Button color='primary' {...props}>
+      <Button color='primary' sx={{justifyContent: 'flex-start', textAlign: 'left', width: '100%', p: 'auto'}} {...props}>
         {label}
       </Button>
     </TableCell>
