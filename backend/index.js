@@ -12,29 +12,11 @@ app.use(cookieParser());    // Parse cookies
 
 /** API **/
 app.get('/', (req, res) => res.send('Welcome to Task Management System API'));
-
-app.use(require('./middleware/formatRequest'));
-app.use(require('./routes/authRoutes'));
-
-app.use(require('./middleware/getLoginUser'));
-app.use(require('./routes/profileRoutes'));
-
-app.use(require('./middleware/checkAdmin'));
-app.use(require('./routes/userRoutes'));
-app.use(require('./routes/groupRoutes'));
+app.use('/user', require('./routes/userRoutes'));
 
 /** ERROR HANDLERS **/
 app.use((req, res) => {
-  res.status(404).send('404 Not Found');
-});
-
-app.use((err, req, res, next) => {
-  console.error(err);
-  res.status(err.status || 500)
-    .json({
-      code: err.code || 'SERVER_ERROR',
-      message: err.message || 'Server error, please try again'
-    });
+  res.status(403).send('Access denied');
 });
 
 /** START SERVER **/
