@@ -13,36 +13,36 @@ const CreateTask = async (req, res) => {
 
   // Validate type
   if (!username || typeof username !== 'string') {
-    return res.status(400).json({ code: 'Username is required' });
+    return res.status(400).json({ code: 'E2001' });
   }
 
   if (!password || typeof password !== 'string') {
-    return res.status(400).json({ code: 'Password is required' });
+    return res.status(400).json({ code: 'E2001' });
   }
 
   if (!task_name || typeof task_name !== 'string') {
-    return res.status(400).json({ code: 'Task name is required' });
+    return res.status(400).json({ code: 'E2001' });
   }
 
   if (!task_app_acronym || typeof task_app_acronym !== 'string') {
-    return res.status(400).json({ code: 'Task app acronym is required' });
+    return res.status(400).json({ code: 'E2001' });
   }
 
   if (task_plan && typeof task_plan !== 'string') {
-    return res.status(400).json({ code: 'Task plan is required' });
+    return res.status(400).json({ code: 'E2001' });
   }
 
   if (task_description && typeof task_description !== 'string') {
-    return res.status(400).json({ code: 'Task description is required' });
+    return res.status(400).json({ code: 'E2001' });
   }
 
   // Validate format
   if (!REGEX_TASK_NAME.test(task_name)) {
-    return res.status(400).json({ code: 'Task name must contain: 1 - 50 characters; only letters (not case sensitive), numbers, or spaces' });
+    return res.status(400).json({ code: 'E2001' });
   }
 
   if (!REGEX_PLAN_NAME.test(task_plan)) {
-    return res.status(400).json({ code: 'Task plan must contain: 1 - 50 characters; only letters (not case sensitive), numbers, underscores, or spaces' });
+    return res.status(400).json({ code: 'E2001' });
   }
 
   const conn = await db.getConnection();
@@ -52,25 +52,25 @@ const CreateTask = async (req, res) => {
     // Verify login
     const [users] = await conn.execute('SELECT user_password AS hashedPassword FROM user WHERE user_username = ? AND user_enabled = 1', [username]);
     if (users.length === 0) {
-      return res.status(400).json({ code: 'User not found' });
+      return res.status(400).json({ code: 'E3001' });
     }
 
     const hashedPassword = users[0].hashedPassword;
     const passwordsMatch = await bcryptjs.compare(password, hashedPassword);
     if (!passwordsMatch) {
-      return res.status(400).json({ code: 'Invalid password' });
+      return res.status(400).json({ code: 'E3001' });
     }
 
     // Verify permissions
     const [permissions] = await conn.execute(`SELECT App_permit_Create AS userGroup FROM application WHERE App_acronym = ?`, [task_app_acronym]);
     if (permissions.length === 0) {
-      return res.status(400).json({ code: 'You do not have permission to create a task in this application' });
+      return res.status(400).json({ code: 'E3002' });
     }
 
     const permittedGroup = permissions[0].userGroup;
     const [userGroups] = await conn.execute(`SELECT 1 FROM user_group WHERE user_group_username = ? AND user_group_groupName = ?`, [username, permittedGroup]);
     if (userGroups.length === 0) {
-      return res.status(400).json({ code: 'You do not have permission to create a task in this application' });
+      return res.status(400).json({ code: 'E3002' });
     }
 
     /** TRANSACTION **/
@@ -82,7 +82,7 @@ const CreateTask = async (req, res) => {
       const [plans] = await conn.execute(`SELECT 1 FROM plan WHERE Plan_MVP_name = ? AND Plan_app_Acronym = ?`, [task_plan, task_app_acronym]);
       if (plans.length === 0) {
         await conn.rollback();
-        return res.status(400).json({ code: 'Plan not found' });
+        return res.status(400).json({ code: 'E4001' });
       }
     }
 
@@ -91,7 +91,7 @@ const CreateTask = async (req, res) => {
     const rNumber = applications[0].rNumber;
     if (rNumber === 2147483647) {
       await conn.rollback();
-      return res.status(400).json({ code: 'Application is full' });
+      return res.status(400).json({ code: 'E4002' });
     }
 
     await conn.execute(`UPDATE application SET App_rNumber = ? WHERE App_acronym = ?`, [rNumber + 1, task_app_acronym]);
@@ -110,12 +110,12 @@ const CreateTask = async (req, res) => {
     );
 
     await conn.commit();
-    res.json({ task_id, code: 'Task created' });
+    res.json({ task_id, code: 'S0001' });
 
   } catch (error) {
     console.log(error);
     await conn.rollback();
-    res.status(400).json();
+    res.status(400).json({ code: 'E5001' });
 
   } finally {
     conn.release();
@@ -131,19 +131,19 @@ const GetTaskbyState = async (req, res) => {
 
   // Validate type
   if (!username || typeof username !== 'string') {
-    return res.status(400).json({ code: 'Username is required' });
+    return res.status(400).json({ code: 'E2001' });
   }
 
   if (!password || typeof password !== 'string') {
-    return res.status(400).json({ code: 'Password is required' });
+    return res.status(400).json({ code: 'E2001' });
   }
 
   if (!task_state || !TASK_STATES.includes(task_state.toUpperCase())) {
-    return res.status(400).json({ code: 'Task state is required' });
+    return res.status(400).json({ code: 'E2001' });
   }
 
   if (!task_app_acronym || typeof task_app_acronym !== 'string') {
-    return res.status(400).json({ code: 'Task app acronym is required' });
+    return res.status(400).json({ code: 'E2001' });
   }
 
   const conn = await db.getConnection();
@@ -153,13 +153,13 @@ const GetTaskbyState = async (req, res) => {
     // Verify login
     const [users] = await conn.execute('SELECT user_password AS hashedPassword FROM user WHERE user_username = ? AND user_enabled = 1', [username]);
     if (users.length === 0) {
-      return res.status(400).json({ code: 'User not found' });
+      return res.status(400).json({ code: 'E3001' });
     }
 
     const hashedPassword = users[0].hashedPassword;
     const passwordsMatch = await bcryptjs.compare(password, hashedPassword);
     if (!passwordsMatch) {
-      return res.status(400).json({ code: 'Invalid password' });
+      return res.status(400).json({ code: 'E3001' });
     }
 
     /** TRANSACTION **/
@@ -179,10 +179,10 @@ const GetTaskbyState = async (req, res) => {
       task_createDate: task.Task_createDate
     }));
 
-    res.json(result);
+    res.json({ tasks: result, code: 'S0001' });
 
   } catch (error) {
-    res.status(400).json();
+    res.status(400).json({ code: 'E5001' });
 
   } finally {
     conn.release();
@@ -196,23 +196,23 @@ const PromoteTask2Done = async (req, res) => {
 
   // Validate type
   if (!username || typeof username !== 'string') {
-    return res.status(400).json({ code: 'Username is required' });
+    return res.status(400).json({ code: 'E2001' });
   }
 
   if (!password || typeof password !== 'string') {
-    return res.status(400).json({ code: 'Password is required' });
+    return res.status(400).json({ code: 'E2001' });
   }
 
   if (!task_id || typeof task_id !== 'string') {
-    return res.status(400).json({ code: 'Task id is required' });
+    return res.status(400).json({ code: 'E2001' });
   }
 
   if (task_notes && typeof task_notes !== 'string') {
-    return res.status(400).json({ code: 'Task notes is invalid' });
+    return res.status(400).json({ code: 'E2001' });
   }
 
   if (task_notes && task_notes.length > 65535) {
-    return res.status(400).json({ code: 'Notes too long' });
+    return res.status(400).json({ code: 'E2001' });
   }
 
   const conn = await db.getConnection();
@@ -222,19 +222,19 @@ const PromoteTask2Done = async (req, res) => {
     // Verify login
     const [users] = await conn.execute('SELECT user_password AS hashedPassword FROM user WHERE user_username = ? AND user_enabled = 1', [username]);
     if (users.length === 0) {
-      return res.status(400).json({ code: 'User not found' });
+      return res.status(400).json({ code: 'E3001' });
     }
 
     const hashedPassword = users[0].hashedPassword;
     const passwordsMatch = await bcryptjs.compare(password, hashedPassword);
     if (!passwordsMatch) {
-      return res.status(400).json({ code: 'Invalid password' });
+      return res.status(400).json({ code: 'E3001' });
     }
 
     // Verify permissions
     const [applications] = await conn.execute(`SELECT Task_app_Acronym AS acronym FROM task WHERE Task_id = ?`, [task_id]);
     if (applications.length === 0) {
-      return res.status(400).json({ code: 'You do not have permission to promote a task to done in this application' });
+      return res.status(400).json({ code: 'E3002' });
     }
 
     const task_app_acronym = applications[0].acronym;
@@ -243,7 +243,7 @@ const PromoteTask2Done = async (req, res) => {
     const permittedGroup = permissions[0].userGroup;
     const [userGroups] = await conn.execute(`SELECT 1 FROM user_group WHERE user_group_username = ? AND user_group_groupName = ?`, [username, permittedGroup]);
     if (userGroups.length === 0) {
-      return res.status(400).json({ code: 'You do not have permission to promote a task to done in this application' });
+      return res.status(400).json({ code: 'E3002' });
     }
 
     /** TRANSACTION **/
@@ -257,7 +257,7 @@ const PromoteTask2Done = async (req, res) => {
     // Wrong state
     if (old_task_state !== 'DOING') {
       await conn.rollback();
-      return res.status(400).json({ code: 'Task is not doing' });
+      return res.status(400).json({ code: 'E4003' });
     }
 
     // Notes
@@ -274,7 +274,7 @@ const PromoteTask2Done = async (req, res) => {
     const new_task_notes = JSON.stringify(notes);
     if (new_task_notes.length > 65535) {
       await conn.rollback();
-      return res.status(400).json({ code: 'Notes too long' });
+      return res.status(400).json({ code: 'E4003' });
     }
 
     await conn.execute(`UPDATE task SET Task_state = ?, Task_notes = ? WHERE Task_id = ?`, [new_task_state, new_task_notes, task_id]);
@@ -286,7 +286,7 @@ const PromoteTask2Done = async (req, res) => {
     const [doneUsers] = await conn.execute(`SELECT user_group_username FROM user_group WHERE user_group_groupName = ?`, [doneGroup]);
     const usernames = doneUsers.map(user => user.user_group_username);
 
-    const [profiles] = await conn.query(`SELECT user_email FROM user WHERE user_username IN (?)`, [usernames]);
+    const [profiles] = await conn.query(`SELECT user_email FROM user WHERE user_username IN (?) AND user_enabled = 1`, [usernames]);
 
     const subject = `[TMS] Task ${task_id} is DONE`;
     const text = `Task ${task_id} is requires appoval`;
@@ -294,11 +294,11 @@ const PromoteTask2Done = async (req, res) => {
     await email.send({ recipients, subject, text });
 
     await conn.commit();
-    res.json({ code: 'Task promoted to DONE state' });
+    res.json({ code: 'S0001' });
 
   } catch (error) {
     await conn.rollback();
-    res.status(400).json();
+    res.status(400).json({ code: 'E5001' });
 
   } finally {
     conn.release();
