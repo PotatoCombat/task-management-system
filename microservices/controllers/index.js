@@ -291,7 +291,7 @@ const PromoteTask2Done = async (req, res) => {
     const subject = `[TMS] Task ${task_id} is DONE`;
     const text = `Task ${task_id} is requires appoval`;
     const recipients = profiles.map(profile => profile.user_email);
-    await email.send({ to: recipients, subject, text });
+    await email.send({ recipients, subject, text });
 
     await conn.commit();
     res.json({ code: 'Task promoted to DONE state' });
